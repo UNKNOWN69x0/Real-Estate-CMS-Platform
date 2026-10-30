@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files (keep the .example files)
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vercel / local tooling
+.vercel
+.claude/
