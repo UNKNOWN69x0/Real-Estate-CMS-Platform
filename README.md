@@ -226,7 +226,7 @@ Full template with comments: [`server/.env.example`](server/.env.example). `rend
 |---|---|---|
 | `VITE_API_URL` | **No, leave unset on Vercel** | The browser calls `/api` on the Vercel domain and `vercel.json` rewrites it to Render. Locally this variable is only the Vite proxy's target (default `http://localhost:5000`). Set it only for a deployment *without* the rewrite, which then also needs `COOKIE_SAMESITE=none` on the API |
 
-The rewrite target is **not** an env var (Vercel rewrites cannot read them): it is the `RENDER_URL` placeholder inside [`client/vercel.json`](client/vercel.json).
+The rewrite target is **not** an env var (Vercel rewrites cannot read them): it is the rewrite `destination` inside [`client/vercel.json`](client/vercel.json).
 
 ---
 
@@ -267,10 +267,10 @@ The API runs on **Render**; the client runs on **Vercel**, which also proxies `/
 
 ### 2. Point Vercel at the API
 
-Open [`client/vercel.json`](client/vercel.json) and replace the placeholder `RENDER_URL` with your Render hostname **without** `https://`:
+[`client/vercel.json`](client/vercel.json) already points the `/api/*` rewrite at this project's Render service (`https://real-estate-cms-platform.onrender.com`). If you deploy your own copy under a different Render hostname, change the destination (full URL, no trailing slash):
 
 ```json
-{ "source": "/api/:path*", "destination": "https://one-chembur-api.onrender.com/api/:path*" }
+{ "source": "/api/:path*", "destination": "https://<your-service>.onrender.com/api/:path*" }
 ```
 
 Commit and push. The second rewrite (`/(.*)` → `/index.html`) is the React Router fallback; the order matters, so keep `/api` first.
@@ -313,7 +313,7 @@ Commit and push. The second rewrite (`/(.*)` → `/index.html`) is the React Rou
 | Admin saves fail with **403 "Origin not allowed"** | `CLIENT_URL` on Render doesn't exactly match the site's origin (scheme, host, no trailing slash) |
 | **Login works but you're immediately logged out** | The browser is calling Render directly (a `VITE_API_URL` was set) while `COOKIE_SAMESITE=lax`; unset it or switch to the rewrite |
 | **429 "Too many requests" for everyone** | `TRUST_PROXY` is too low (needs `2`) |
-| `/api/*` returns the app's HTML | `RENDER_URL` placeholder not replaced in `vercel.json`, or the `/api` rewrite is not first |
+| `/api/*` returns the app's HTML | The rewrite `destination` in `vercel.json` doesn't match your Render hostname, or the `/api` rewrite is not first |
 | API won't start in production | It validates config: `JWT_SECRET` ≥ 32 chars, `CLIENT_URL` set and `https://` |
 | Uploads return **503** | `CLOUDINARY_*` not set on Render |
 
