@@ -12,14 +12,21 @@ import FloorPlans from '../../components/sections/FloorPlans.jsx';
 import Rera from '../../components/sections/Rera.jsx';
 import Developer from '../../components/sections/Developer.jsx';
 import Cta from '../../components/sections/Cta.jsx';
+import CustomSections from '../../components/sections/CustomSections.jsx';
 
 export default function HomePage() {
   return (
     <>
       <SeoHead />
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:bg-brown-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+      >
+        Skip to content
+      </a>
       <Navbar />
       <ApiStatusBanner />
-      <main>
+      <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <About />
         <Connectivity />
@@ -29,6 +36,7 @@ export default function HomePage() {
         <FloorPlans />
         <Rera />
         <Developer />
+        <CustomSections />
         <Cta />
       </main>
       <Footer />

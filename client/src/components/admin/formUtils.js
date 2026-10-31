@@ -90,6 +90,9 @@ function validateField(field, values, path, errors) {
     if (field.maxLength && String(value).length > field.maxLength) {
       errors[path] = `Keep this under ${field.maxLength} characters`;
     }
+    if (!errors[path] && field.pattern && !new RegExp(field.pattern).test(String(value))) {
+      errors[path] = field.patternMessage ?? 'Invalid format';
+    }
     // Password rules (values are never trimmed or altered)
     if (!errors[path] && field.minLength && String(value).length < field.minLength) {
       errors[path] = `Use at least ${field.minLength} characters`;

@@ -12,6 +12,10 @@ export const sections = [
     content: {
       logoText: 'CODENAME one CHEMBUR',
       ctaLabel: 'Enquire Now',
+      enquiryTitle: 'Enquire Now',
+      enquiryIntro: 'Share your details and our team will get back to you shortly.',
+      enquirySubmitLabel: 'Submit enquiry',
+      enquirySuccessTitle: 'Enquiry received',
       links: [
         { label: 'Home', href: '#home' },
         { label: 'About Project', href: '#about' },
@@ -201,6 +205,7 @@ export const sections = [
         phones: ['022-5064 7478', '98331 08888'],
         email: '',
       },
+      quickLinksHeading: 'Quick Links',
       quickLinks: [
         { label: 'About the Project', href: '#about' },
         { label: 'Floor Plans', href: '#floor-plans' },

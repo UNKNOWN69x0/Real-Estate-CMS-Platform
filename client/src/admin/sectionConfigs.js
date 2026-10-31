@@ -48,11 +48,15 @@ const linkList = (name, label) => ({
 export const sectionConfigs = {
   navbar: {
     label: 'Navbar',
-    description: 'Top navigation links and the Enquire button label.',
+    description: 'Top navigation links, the Enquire button and the enquiry pop-up text.',
     fields: [
       text('title', 'Brand name'),
       text('content.ctaLabel', 'Enquire button label'),
       linkList('content.links', 'Menu links'),
+      text('content.enquiryTitle', 'Enquiry pop-up title', { hint: 'Default: Enquire Now' }),
+      textarea('content.enquiryIntro', 'Enquiry pop-up introduction', { rows: 2, hint: 'Default: Share your details and our team will get back to you shortly.' }),
+      text('content.enquirySubmitLabel', 'Enquiry submit button label', { hint: 'Default: Submit enquiry' }),
+      text('content.enquirySuccessTitle', 'Enquiry success heading', { hint: 'Default: Enquiry received' }),
     ],
   },
   hero: {
@@ -202,6 +206,7 @@ export const sectionConfigs = {
       image('image', 'Footer logo'),
       office('content.corporateOffice', 'Corporate office'),
       office('content.salesOffice', 'Sales office'),
+      text('content.quickLinksHeading', 'Quick links heading', { hint: 'Default: Quick Links' }),
       linkList('content.quickLinks', 'Quick links'),
       text('content.copyright', 'Copyright line'),
       linkList('content.legalLinks', 'Legal links (leave the link empty to show plain text)'),
@@ -209,12 +214,45 @@ export const sectionConfigs = {
   },
 };
 
-// Sections created outside the known list still get the basic fields
-export const defaultSectionConfig = {
-  label: 'Section',
-  description: 'This section has no custom editor yet, so only its basic fields can be edited.',
-  fields: [text('title', 'Heading'), text('subtitle', 'Subheading'), textarea('body', 'Body', { rows: 6 }), image('image', 'Image')],
+// Custom sections: any section whose key isn't built in. They render generically on the public page,
+// between Developer and the closing banner (components/sections/CustomSections.jsx).
+export const customSectionConfig = {
+  label: 'Custom section',
+  description: 'A free-form block on the public page: heading, text, optional image and button. Link to it from Navbar → Menu links with #section-<key>.',
+  fields: [
+    text('subtitle', 'Eyebrow'),
+    text('title', 'Heading', { required: true }),
+    textarea('body', 'Text', { rows: 8, hint: 'A blank line starts a new paragraph.' }),
+    image('image', 'Image (optional)'),
+    {
+      name: 'content.imagePosition',
+      label: 'Image position',
+      type: 'select',
+      options: [
+        { value: 'right', label: 'Image on the right' },
+        { value: 'left', label: 'Image on the left' },
+      ],
+    },
+    {
+      name: 'content.background',
+      label: 'Background',
+      type: 'select',
+      options: [
+        { value: 'white', label: 'White' },
+        { value: 'sand', label: 'Beige' },
+      ],
+    },
+    {
+      name: 'content.cta',
+      label: 'Button (optional)',
+      type: 'group',
+      fields: [text('label', 'Button label'), url('href', 'Link (leave empty to open the enquiry form)')],
+    },
+  ],
 };
+
+// Pattern for a new section's key (mirrors the server's validation)
+export const SECTION_KEY_PATTERN = '^[a-z][a-zA-Z0-9-]{1,39}$';
 
 // Shown under every section's own fields
 export const seoFields = [
@@ -242,4 +280,4 @@ export const statusField = {
 
 export const orderField = { name: 'order', label: 'Display order', type: 'number', integer: true, min: 0, max: 100000, hint: 'Lower numbers appear first' };
 
-export const getSectionConfig = (key) => sectionConfigs[key] ?? defaultSectionConfig;
+export const getSectionConfig = (key) => sectionConfigs[key] ?? customSectionConfig;

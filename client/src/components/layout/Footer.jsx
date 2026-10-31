@@ -67,7 +67,7 @@ export default function Footer() {
 
         {quickLinks.length > 0 && (
           <nav aria-label="Quick links">
-            <h3 className={heading}>Quick Links</h3>
+            <h3 className={heading}>{section.content?.quickLinksHeading?.trim() || 'Quick Links'}</h3>
             <ul className="mt-3 space-y-2 text-xs text-white/90">
               {quickLinks.map((link) => (
                 <li key={link.href + link.label}>
