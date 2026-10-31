@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { demoField } from './shared.js';
 
 export const LOG_ACTIONS = ['create', 'update', 'delete', 'publish', 'unpublish'];
 
@@ -10,6 +11,7 @@ const activityLogSchema = new mongoose.Schema(
     entity: { type: String, required: true }, // e.g. "section", "amenity"
     entityId: { type: String, default: '' },
     summary: { type: String, default: '' },
+    demo: demoField,
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );

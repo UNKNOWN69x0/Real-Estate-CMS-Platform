@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { demoField } from './shared.js';
 
 export const INQUIRY_STATUSES = ['new', 'contacted', 'closed'];
 
@@ -11,6 +12,7 @@ const inquirySchema = new mongoose.Schema(
     source: { type: String, trim: true, default: 'website' },
     status: { type: String, enum: INQUIRY_STATUSES, default: 'new' },
     notes: { type: String, trim: true, default: '' },
+    demo: demoField,
   },
   { timestamps: true },
 );

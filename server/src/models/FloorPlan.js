@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { publishableFields } from './shared.js';
+import { demoField, publishableFields } from './shared.js';
 
 // Areas are stored in sq.ft as numbers so the table can sort/format them.
 const floorPlanSchema = new mongoose.Schema(
@@ -12,6 +12,7 @@ const floorPlanSchema = new mongoose.Schema(
     image: { type: String, default: '' },
     pdfUrl: { type: String, default: '' },
     ...publishableFields,
+    demo: demoField,
   },
   { timestamps: true },
 );

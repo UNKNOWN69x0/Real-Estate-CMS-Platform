@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "seed": "node src/seed/seed.js",
-    "dev:memory": "node scripts/dev-memory.js"
+    "dev:memory": "node scripts/dev-memory.js",
+    "seed:demo": "node src/seed/demo.js",
+    "seed:demo:clear": "node src/seed/demo.js --clear"
   },
   "keywords": [],
   "author": "",
