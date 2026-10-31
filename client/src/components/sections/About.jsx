@@ -4,6 +4,7 @@ import SectionWrapper from '../ui/SectionWrapper.jsx';
 import Button from '../ui/Button.jsx';
 import Card from '../ui/Card.jsx';
 import Skeleton from '../ui/Skeleton.jsx';
+import { safeHref } from '../../utils/safeUrl.js';
 
 function StatCard({ value, label }) {
   return (
@@ -45,6 +46,7 @@ export default function About() {
   const stats = content.stats ?? [];
   const highlights = content.highlights ?? [];
   const brochure = content.brochureCta;
+  const brochureUrl = safeHref(brochure?.url);
 
   return (
     <SectionWrapper id="about" className="bg-sand py-16 sm:py-24" containerClassName="relative grid items-center gap-12 md:grid-cols-2">
@@ -73,8 +75,8 @@ export default function About() {
         )}
 
         {brochure?.label &&
-          (brochure.url ? (
-            <Button href={brochure.url} target="_blank" rel="noopener noreferrer" className="mt-8">
+          (brochureUrl ? (
+            <Button href={brochureUrl} target="_blank" rel="noopener noreferrer" className="mt-8">
               {brochure.label}
             </Button>
           ) : (

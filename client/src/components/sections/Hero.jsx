@@ -2,6 +2,7 @@ import { useSection } from '../../context/SectionsContext.jsx';
 import { useInquiry } from '../../context/InquiryContext.jsx';
 import Button from '../ui/Button.jsx';
 import Skeleton from '../ui/Skeleton.jsx';
+import { safeHref } from '../../utils/safeUrl.js';
 
 const HEIGHT = 'min-h-[30rem] sm:min-h-[34rem] lg:min-h-[38rem]';
 
@@ -65,7 +66,7 @@ export default function Hero() {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           {primary?.label && (
-            <Button href={primary.href || '#about'} className="!border-white/30 !bg-brown-700/90">
+            <Button href={safeHref(primary.href) || '#about'} className="!border-white/30 !bg-brown-700/90">
               {primary.label}
             </Button>
           )}

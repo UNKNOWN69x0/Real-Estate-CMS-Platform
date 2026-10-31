@@ -4,6 +4,7 @@ import { useSection } from '../../context/SectionsContext.jsx';
 import { useInquiry } from '../../context/InquiryContext.jsx';
 import Skeleton from '../ui/Skeleton.jsx';
 import Button from '../ui/Button.jsx';
+import { safeHref } from '../../utils/safeUrl.js';
 
 // Brand lockup is built from the hero's project naming so it stays CMS-driven
 function Logo({ hero }) {
@@ -30,7 +31,7 @@ export default function Navbar() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [menuOpen]);
 
-  const links = navbar?.content?.links ?? [];
+  const links = (navbar?.content?.links ?? []).map((link) => ({ ...link, href: safeHref(link.href) || '#home' }));
   const ctaLabel = navbar?.content?.ctaLabel ?? 'Enquire Now';
 
   const enquire = () => {
