@@ -66,7 +66,7 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 | GitHub repo | this repository |
 | Hosted URLs | [table above](#hosted-urls-and-credentials) |
 | README | this file |
-| API collection | [`docs/postman_collection.json`](docs/postman_collection.json): 65 requests, every route, login first |
+| API collection | [`docs/postman_collection.json`](docs/postman_collection.json): 69 requests, every route, login first |
 | Database schema | [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md) |
 | Admin credentials | [table above](#hosted-urls-and-credentials) |
 
@@ -219,6 +219,7 @@ Full template with comments: [`server/.env.example`](server/.env.example). `rend
 | `TRUST_PROXY` | no | `2` in prod, `0` locally | Number of reverse proxies in front of the API (Vercel + Render = 2). Needed for correct per-visitor rate limiting |
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | for uploads | | Cloudinary credentials. Without them uploads return 503 |
 | `SEED_ADMIN_NAME` / `_EMAIL` / `_PASSWORD` | for seeding | `Admin` / `admin@onechembur.com` / none | Admin account created by `npm run seed` (run from your machine) |
+| `ADMIN_NEW_PASSWORD` | only for `npm run reset-admin` | none | The new admin password for an emergency reset. Set it for the one command, then unset it; never commit it or put it on Render |
 
 ### Client: Vercel
 
@@ -238,9 +239,26 @@ Run these from `server/` against whatever `MONGODB_URI` points to.
 |---|---|
 | `npm run seed` | Creates the admin user (from `SEED_ADMIN_*`) and all site content from the design screenshots: navbar, hero, about + stats, connectivity, gallery, amenities, video, floor plans, MahaRERA, developer, CTA, footer. Existing documents are left untouched, so edits made in the admin are never overwritten. |
 | `npm run seed -- --reset` | Overwrites seeded content and resets the admin password to `SEED_ADMIN_PASSWORD`. |
+| `npm run reset-admin` | **Emergency password reset** when you're locked out. Sets the admin password from the `ADMIN_NEW_PASSWORD` environment variable (10+ characters), signs out every existing session, and records an audit entry. The password is never printed or logged. See below. |
 | `npm run seed:demo` | Adds **sample data** for demos and screenshots (see below). Safe to run twice. |
 | `npm run seed:demo -- --reset` | Removes the demo records and re-creates them with fresh dates. |
 | `npm run seed:demo:clear` | Removes **only** the demo records. |
+
+**Changing your password normally:** sign in and open **Admin → Account** (`/admin/account`). It asks for the current password, a new one (10+ characters, different from the current one) and a confirmation. You stay signed in on that device and any other signed-in device is signed out.
+
+**Locked out? `reset-admin`.** Run it from `server/` against whichever database `MONGODB_URI` points to (for the hosted site, put the Atlas URI in `server/.env`). Pass the new password through the environment, not on the command line of a shared machine:
+
+```bash
+# bash
+ADMIN_NEW_PASSWORD='a-new-long-password' npm run reset-admin
+```
+
+```powershell
+# PowerShell
+$env:ADMIN_NEW_PASSWORD='a-new-long-password'; npm run reset-admin; Remove-Item Env:ADMIN_NEW_PASSWORD
+```
+
+It updates `SEED_ADMIN_EMAIL` (default `admin@onechembur.com`), or the first admin if that account doesn't exist. Unset `ADMIN_NEW_PASSWORD` afterwards and keep it out of `.env` files and shell history.
 
 **What `seed:demo` adds:** 25 inquiries across the last 30 days (varied Indian names, `+91 98…` numbers, mixed sources and statuses, some notes); 40 activity-log entries over the last 14 days attributed to the admin; and 3 extra amenities plus 3 extra floor plans, two of each in *draft* so the status filters have something to show.
 
@@ -341,6 +359,7 @@ Errors are JSON: `{ "success": false, "message": "…", "errors": { "field": "me
 |---|---|---|
 | POST | `/api/auth/login` | Sets the httpOnly session cookie (10 attempts / 15 min) |
 | GET | `/api/auth/me` | Current admin |
+| POST | `/api/auth/change-password` | Body `{ currentPassword, newPassword, confirmPassword }`. 10+ chars (max 72 bytes), different from the current one, must match the confirmation. Wrong current password is a `400` with `errors.currentPassword`. Rate limited (5 / 15 min). Returns a fresh cookie; older sessions are signed out |
 | POST | `/api/auth/logout` | Clears the cookie |
 
 **Admin (cookie required)**
@@ -363,6 +382,7 @@ Errors are JSON: `{ "success": false, "message": "…", "errors": { "field": "me
 ## Security notes
 
 - **Authentication:** bcrypt-hashed passwords; HS256 JWT in an `httpOnly`, `Secure` (production), `SameSite=Lax` cookie, so scripts can't read it; the user is re-loaded from the database on every request. Login compares against a dummy hash for unknown emails to avoid revealing which accounts exist.
+- **Password changes:** the current password is verified with bcrypt before anything changes; new passwords must be 10+ characters, different from the old one, and at most 72 bytes (bcrypt's limit, so nothing is silently truncated); hashed with the same bcrypt cost as the seed (12). A change signs out every older session (`passwordChangedAt` vs the token's issue time) while the current device gets a fresh cookie. The activity log records only "Changed password": passwords and hashes are never logged or returned. The endpoint is rate limited.
 - **Rate limiting:** global API limit, 10 login attempts / 15 min, 10 public enquiries / hour (per visitor IP, correct behind the proxies).
 - **CSRF:** state-changing requests whose `Origin` isn't in `CLIENT_URL` are rejected (403); cookies are `SameSite=Lax`; CORS is an allowlist with credentials.
 - **Input validation:** Zod on every write with unknown fields stripped; list queries only honour whitelisted filter and sort fields and regex-escape search text (no operator injection).

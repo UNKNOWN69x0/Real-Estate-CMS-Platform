@@ -20,6 +20,11 @@
       "description": "The password you set as SEED_ADMIN_PASSWORD"
     },
     {
+      "key": "tempPassword",
+      "value": "Temporary-Passw0rd-1",
+      "description": "Used only by the Account folder: the password is switched to this and straight back. 10+ characters, different from adminPassword."
+    },
+    {
       "key": "sectionId",
       "value": ""
     },
@@ -2710,6 +2715,192 @@
                   "description": "JPG, PNG, WebP, GIF or PDF, max 10 MB"
                 }
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "description": "Change the admin password. The folder switches it to {{tempPassword}} and straight back, so run it as a whole (rate limited to 5 attempts per 15 minutes). Sessions that existed before a change are signed out; the response sets a fresh cookie so this session continues.",
+      "item": [
+        {
+          "name": "Change password (wrong current password, 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Change password (wrong current password, 400): status 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ],
+              "query": []
+            },
+            "description": "A wrong current password is a 400 with errors.currentPassword (not a 401), so a UI can show it on the field.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"definitely-not-the-password\",\n  \"newPassword\": \"{{tempPassword}}\",\n  \"confirmPassword\": \"{{tempPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Change password (confirmation mismatch, 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Change password (confirmation mismatch, 400): status 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ],
+              "query": []
+            },
+            "description": "New password must be 10+ characters (max 72 bytes), different from the current one, and match confirmPassword.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{adminPassword}}\",\n  \"newPassword\": \"{{tempPassword}}\",\n  \"confirmPassword\": \"something-else-entirely\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Change password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Change password: status 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ],
+              "query": []
+            },
+            "description": "Verifies the current password, stores the new bcrypt hash and logs \"Changed password\" in the activity log (no password data). Returns a fresh session cookie.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{adminPassword}}\",\n  \"newPassword\": \"{{tempPassword}}\",\n  \"confirmPassword\": \"{{tempPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Change password back",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Change password back: status 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ],
+              "query": []
+            },
+            "description": "Restores the original password so the rest of the collection keeps working.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{tempPassword}}\",\n  \"newPassword\": \"{{adminPassword}}\",\n  \"confirmPassword\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }

@@ -26,7 +26,7 @@ erDiagram
 |---|---|---|---|
 | `ActivityLog.user` | `User._id` | ObjectId reference | The log also stores `userEmail` as a snapshot so history survives user deletion. |
 | `Section.updatedBy` | `User._id` | ObjectId reference | Set automatically on every create/update. |
-| `ActivityLog.entityId` | any content document | plain string (the document's id) | A *soft* link: it is not a Mongoose reference, so logs outlive deleted documents (a "delete" entry points at an id that no longer exists). `entity` says which collection. |
+| `ActivityLog.entityId` | any content document (or the `User` for password changes) | plain string (the document's id) | A *soft* link: it is not a Mongoose reference, so logs outlive deleted documents (a "delete" entry points at an id that no longer exists). `entity` says which collection. |
 
 Everything else is intentionally flat and self-contained: the public site reads each collection independently, and there are no joins. `Section.content` is a free-form sub-document so each section can carry its own structure without a new collection per block.
 
@@ -50,6 +50,7 @@ Collection `users`. Admin accounts only (there is a single role).
 | `email` | String | yes | | **unique**, lowercased, trimmed |
 | `passwordHash` | String | yes | | bcrypt hash; `select: false` (never loaded unless asked) |
 | `role` | String | | `admin` | enum: `admin` |
+| `passwordChangedAt` | Date | | | set when the password changes (admin Account page, `npm run reset-admin`, `seed --reset`). Sessions issued before this moment are rejected, which signs out every other device |
 | `createdAt`, `updatedAt` | Date | auto | | |
 
 ## Section
@@ -149,7 +150,7 @@ Collection `activitylogs`. Append-only audit trail written by middleware after e
 | `user` | ObjectId → `User` | | | who did it |
 | `userEmail` | String | | `""` | snapshot of the user's email |
 | `action` | String | yes | | enum `create` \| `update` \| `delete` \| `publish` \| `unpublish` |
-| `entity` | String | yes | | `section`, `amenity`, `gallery item`, `floor plan`, `inquiry` |
+| `entity` | String | yes | | `section`, `amenity`, `gallery item`, `floor plan`, `inquiry`, `user` (password changes: summary `Changed password`, never any password data) |
 | `entityId` | String | | `""` | id of the affected document ([soft link](#overview-and-relationships)) |
 | `summary` | String | | `""` | human text, e.g. `Updated section "hero"` |
 | `demo` | String (hidden) | | | demo marker |
