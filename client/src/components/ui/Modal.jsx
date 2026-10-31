@@ -4,7 +4,9 @@ import { X } from 'lucide-react';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])';
 
-export default function Modal({ open, onClose, title, children }) {
+const SIZES = { md: 'sm:max-w-md', lg: 'sm:max-w-2xl', xl: 'sm:max-w-4xl' };
+
+export default function Modal({ open, onClose, title, size = 'md', children }) {
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -52,9 +54,9 @@ export default function Modal({ open, onClose, title, children }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="max-h-[92svh] w-full overflow-y-auto bg-cream shadow-2xl sm:max-w-md"
+        className={`max-h-[92svh] w-full overflow-y-auto bg-cream shadow-2xl ${SIZES[size]}`}
       >
-        <div className="flex items-start justify-between border-b border-brown-400/30 px-5 py-4">
+        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-brown-400/30 bg-cream px-5 py-4">
           <h2 className="text-lg font-semibold text-brown-700">{title}</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="-mr-1 p-1 text-brown-700 hover:text-brown-900">
             <X size={20} />

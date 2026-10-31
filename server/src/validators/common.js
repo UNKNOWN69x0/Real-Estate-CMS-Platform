@@ -9,7 +9,7 @@ export const urlOrEmpty = z
   .max(2048)
   .refine((v) => v === '' || /^https?:\/\//i.test(v), 'Must be a valid http(s) URL');
 
-export const orderField = z.coerce.number().int().min(0).max(100000);
+export const orderField = z.coerce.number().int('Must be a whole number').min(0, 'Must be 0 or more').max(100000, 'Must be 100000 or less');
 
 export const seoSchema = z.object({
   metaTitle: z.string().trim().max(70, 'Keep the meta title under 70 characters').default(''),

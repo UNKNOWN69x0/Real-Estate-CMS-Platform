@@ -1,7 +1,8 @@
 import { useId } from 'react';
 
-// Label + input/textarea + inline error, wired up for screen readers.
-export default function FormField({ label, error, hint, required, as: Tag = 'input', className = '', ...props }) {
+// Label + input/textarea/select + inline error, wired up for screen readers.
+// Pass `as="select"` with <option> children for a dropdown.
+export default function FormField({ label, error, hint, required, as: Tag = 'input', className = '', children, ...props }) {
   const id = useId();
   const errorId = `${id}-error`;
 
@@ -19,7 +20,9 @@ export default function FormField({ label, error, hint, required, as: Tag = 'inp
           error ? 'border-red-600' : 'border-brown-400/50'
         }`}
         {...props}
-      />
+      >
+        {children}
+      </Tag>
       {hint && !error && <p className="mt-1 text-xs text-brown-600">{hint}</p>}
       {error && (
         <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-red-700">

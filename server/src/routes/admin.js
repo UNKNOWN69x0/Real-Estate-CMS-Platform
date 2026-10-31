@@ -27,18 +27,24 @@ router.get(
       ]);
       return { total, published, draft: total - published };
     };
-    const [sections, amenities, gallery, floorPlans, inquiriesTotal, inquiriesNew, recentActivity] = await Promise.all([
+    const [sections, amenities, gallery, floorPlans, inquiryCounts, recentInquiries, recentActivity] = await Promise.all([
       countByStatus(Section),
       countByStatus(Amenity),
       countByStatus(GalleryItem),
       countByStatus(FloorPlan),
-      Inquiry.countDocuments(),
-      Inquiry.countDocuments({ status: 'new' }),
+      Inquiry.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+      Inquiry.find().sort({ createdAt: -1 }).limit(5).select('name phone email status createdAt').lean(),
       ActivityLog.find().sort({ createdAt: -1 }).limit(5).lean(),
     ]);
-    res.json({
-      data: { sections, amenities, gallery, floorPlans, inquiries: { total: inquiriesTotal, new: inquiriesNew }, recentActivity },
-    });
+
+    const byStatus = Object.fromEntries(inquiryCounts.map((row) => [row._id, row.count]));
+    const inquiries = {
+      total: inquiryCounts.reduce((sum, row) => sum + row.count, 0),
+      new: byStatus.new ?? 0,
+      contacted: byStatus.contacted ?? 0,
+      closed: byStatus.closed ?? 0,
+    };
+    res.json({ data: { sections, amenities, gallery, floorPlans, inquiries, recentInquiries, recentActivity } });
   }),
 );
 

@@ -3,13 +3,32 @@ import { orderField, seoSchema, statusEnum, urlOrEmpty } from './common.js';
 
 const text = (max = 200) => z.string().trim().max(max);
 
+// Section.content is free-form, but any link/image field in it must be http(s), a #anchor or a /path
+// (never javascript: or data:). Issue paths mirror the admin form's field names (content.stats.0.url).
+const LINK_KEY = /(url|href|image)$/i;
+const SAFE_LINK = /^(https?:\/\/|#|\/(?!\/))/i;
+
+function checkContentLinks(value, path, ctx) {
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => checkContentLinks(item, [...path, i], ctx));
+  } else if (value && typeof value === 'object') {
+    Object.entries(value).forEach(([key, item]) => checkContentLinks(item, [...path, key], ctx));
+  } else if (typeof value === 'string' && LINK_KEY.test(String(path.at(-1))) && value.trim() && !SAFE_LINK.test(value.trim())) {
+    ctx.addIssue({ code: 'custom', path, message: 'Must be an http(s) URL, a #anchor or a /path' });
+  }
+}
+
+const sectionContent = z
+  .record(z.string(), z.unknown())
+  .superRefine((content, ctx) => checkContentLinks(content, [], ctx));
+
 export const sectionSchema = z.object({
   key: z.string().trim().regex(/^[a-z][a-zA-Z0-9-]{1,39}$/, 'Use letters, numbers or dashes (2-40 chars)'),
   title: text(200).default(''),
   subtitle: text(300).default(''),
   body: z.string().max(10000).default(''),
   image: urlOrEmpty.default(''),
-  content: z.record(z.string(), z.unknown()).default({}),
+  content: sectionContent.default({}),
   seo: seoSchema.default({ metaTitle: '', metaDescription: '', ogImage: '' }),
   status: statusEnum.default('draft'),
   order: orderField.default(0),
