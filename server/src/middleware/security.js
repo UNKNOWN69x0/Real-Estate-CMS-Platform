@@ -13,6 +13,7 @@ const limiter = (windowMs, limit, message) =>
 
 export const apiLimiter = limiter(15 * 60 * 1000, 600, 'Too many requests, please slow down');
 export const loginLimiter = limiter(15 * 60 * 1000, 10, 'Too many login attempts, try again in 15 minutes');
+export const passwordLimiter = limiter(15 * 60 * 1000, 5, 'Too many password change attempts, try again in 15 minutes');
 export const inquiryLimiter = limiter(60 * 60 * 1000, 10, 'Too many enquiries from this address, please try again later');
 
 /**

@@ -8,7 +8,7 @@ import Toolbar from '../../components/admin/Toolbar.jsx';
 import StatusBadge from '../../components/admin/StatusBadge.jsx';
 
 const option = (value, label = value) => ({ value, label });
-const ENTITY_OPTIONS = [option('', 'All'), option('section', 'Section'), option('amenity', 'Amenity'), option('gallery item', 'Gallery item'), option('floor plan', 'Floor plan'), option('inquiry', 'Inquiry')];
+const ENTITY_OPTIONS = [option('', 'All'), option('section', 'Section'), option('amenity', 'Amenity'), option('gallery item', 'Gallery item'), option('floor plan', 'Floor plan'), option('inquiry', 'Inquiry'), option('user', 'User account')];
 const ACTION_OPTIONS = [option('', 'All'), ...['create', 'update', 'delete', 'publish', 'unpublish'].map((a) => option(a, a[0].toUpperCase() + a.slice(1)))];
 
 // Date inputs give local yyyy-mm-dd; the API wants ISO timestamps covering the whole day

@@ -10,7 +10,8 @@
     "seed": "node src/seed/seed.js",
     "dev:memory": "node scripts/dev-memory.js",
     "seed:demo": "node src/seed/demo.js",
-    "seed:demo:clear": "node src/seed/demo.js --clear"
+    "seed:demo:clear": "node src/seed/demo.js --clear",
+    "reset-admin": "node src/seed/resetAdmin.js"
   },
   "keywords": [],
   "author": "",

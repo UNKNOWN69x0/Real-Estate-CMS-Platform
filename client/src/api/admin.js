@@ -14,6 +14,7 @@ export const adminApi = {
   login: (email, password) => request('/api/auth/login', { method: 'POST', body: { email, password } }).then((r) => r.data),
   me: () => request('/api/auth/me').then((r) => r.data),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
+  changePassword: (body) => request('/api/auth/change-password', { method: 'POST', body }),
 
   stats: () => request('/api/admin/stats').then((r) => r.data),
 

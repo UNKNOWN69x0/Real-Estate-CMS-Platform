@@ -19,6 +19,10 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
 
   const user = await User.findById(payload.sub);
   if (!user) throw ApiError.unauthorized();
+  // A password change signs out every session that existed before it (compared in whole seconds, like JWT iat)
+  if (user.passwordChangedAt && payload.iat < Math.floor(user.passwordChangedAt.getTime() / 1000)) {
+    throw ApiError.unauthorized('Session expired, please log in again');
+  }
   req.user = user;
   next();
 });

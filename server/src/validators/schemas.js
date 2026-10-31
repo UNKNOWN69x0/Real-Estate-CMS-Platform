@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { orderField, seoSchema, statusEnum, urlOrEmpty } from './common.js';
+import { MAX_PASSWORD_BYTES, MIN_PASSWORD_LENGTH } from '../config/password.js';
 
 const text = (max = 200) => z.string().trim().max(max);
 
@@ -82,5 +83,27 @@ export const loginSchema = z.object({
   email: z.email('Enter a valid email').max(200),
   password: z.string().min(1, 'Password is required').max(200),
 });
+
+// Passwords are never trimmed or transformed. Cross-field problems are attached to the field the user should fix.
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required').max(200),
+    newPassword: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+      .max(200)
+      .refine((value) => Buffer.byteLength(value, 'utf8') <= MAX_PASSWORD_BYTES, {
+        message: `Must be ${MAX_PASSWORD_BYTES} bytes or fewer (shorter if it uses emoji or accented characters)`,
+      }),
+    confirmPassword: z.string().min(1, 'Please confirm the new password').max(200),
+  })
+  .superRefine((value, ctx) => {
+    if (value.newPassword !== value.confirmPassword) {
+      ctx.addIssue({ code: 'custom', path: ['confirmPassword'], message: 'Passwords do not match' });
+    }
+    if (value.newPassword === value.currentPassword) {
+      ctx.addIssue({ code: 'custom', path: ['newPassword'], message: 'New password must be different from the current one' });
+    }
+  });
 
 export const publishSchema = z.object({ status: statusEnum.optional() }).default({});

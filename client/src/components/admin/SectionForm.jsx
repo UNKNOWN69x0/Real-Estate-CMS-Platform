@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import FormField from '../ui/FormField.jsx';
+import PasswordField from '../ui/PasswordField.jsx';
 import Button from '../ui/Button.jsx';
 import ImageUpload from './ImageUpload.jsx';
 import { AMENITY_ICON_NAMES, getAmenityIcon } from '../../utils/amenityIcons.js';
@@ -27,6 +28,16 @@ function FieldRenderer({ field, path, values, errors, onChange }) {
           maxLength={field.maxLength}
           onChange={(e) => onChange(path, e.target.value)}
           hint={field.maxLength ? `${String(value ?? '').length}/${field.maxLength} characters` : field.hint}
+        />
+      );
+
+    case 'password':
+      return (
+        <PasswordField
+          {...common}
+          autoComplete={field.autoComplete}
+          value={value ?? ''}
+          onChange={(e) => onChange(path, e.target.value)}
         />
       );
 

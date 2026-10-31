@@ -90,6 +90,19 @@ function validateField(field, values, path, errors) {
     if (field.maxLength && String(value).length > field.maxLength) {
       errors[path] = `Keep this under ${field.maxLength} characters`;
     }
+    // Password rules (values are never trimmed or altered)
+    if (!errors[path] && field.minLength && String(value).length < field.minLength) {
+      errors[path] = `Use at least ${field.minLength} characters`;
+    }
+    if (!errors[path] && field.maxBytes && new TextEncoder().encode(String(value)).length > field.maxBytes) {
+      errors[path] = `Must be ${field.maxBytes} bytes or fewer (shorter if it uses emoji or accented characters)`;
+    }
+    if (!errors[path] && field.differsFrom && value === getIn(values, field.differsFrom)) {
+      errors[path] = field.differsMessage ?? 'Must be different from the current value';
+    }
+    if (!errors[path] && field.matches && value !== getIn(values, field.matches)) {
+      errors[path] = field.matchesMessage ?? 'Values do not match';
+    }
   }
 }
 

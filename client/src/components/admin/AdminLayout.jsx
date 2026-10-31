@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { ExternalLink, Images, Inbox, Layers, LayoutDashboard, LogOut, Menu, Ruler, ScrollText, Sparkles, X } from 'lucide-react';
+import { ExternalLink, Images, Inbox, KeyRound, Layers, LayoutDashboard, LogOut, Menu, Ruler, ScrollText, Sparkles, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/admin/floor-plans', label: 'Floor Plans', icon: Ruler },
   { to: '/admin/inquiries', label: 'Inquiries', icon: Inbox },
   { to: '/admin/logs', label: 'Activity Logs', icon: ScrollText },
+  { to: '/admin/account', label: 'Account', icon: KeyRound },
 ];
 
 const linkClass = ({ isActive }) =>

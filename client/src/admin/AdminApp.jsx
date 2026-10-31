@@ -12,6 +12,7 @@ import SectionEditorPage from '../pages/admin/SectionEditorPage.jsx';
 import ResourcePage from '../pages/admin/ResourcePage.jsx';
 import InquiriesPage from '../pages/admin/InquiriesPage.jsx';
 import LogsPage from '../pages/admin/LogsPage.jsx';
+import AccountPage from '../pages/admin/AccountPage.jsx';
 import { resourceConfigs } from './resourceConfigs.jsx';
 
 // Mounted at /admin/* and code-split from the public site
@@ -36,6 +37,7 @@ export default function AdminApp() {
                 ))}
                 <Route path="inquiries" element={<InquiriesPage />} />
                 <Route path="logs" element={<LogsPage />} />
+                <Route path="account" element={<AccountPage />} />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Route>
             </Route>

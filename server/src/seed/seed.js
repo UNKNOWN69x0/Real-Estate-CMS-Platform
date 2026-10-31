@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 import { connectDb } from '../config/db.js';
+import { BCRYPT_ROUNDS } from '../config/password.js';
 import { User } from '../models/User.js';
 import { Section } from '../models/Section.js';
 import { Amenity } from '../models/Amenity.js';
@@ -33,10 +34,10 @@ export async function seed({ reset = false } = {}) {
   const { email, name, password } = env.seedAdmin;
   if (!password) throw new Error('Set SEED_ADMIN_PASSWORD in server/.env before seeding');
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const existing = await User.findOne({ email });
   if (existing) {
-    if (reset) await User.updateOne({ _id: existing._id }, { passwordHash, name });
+    if (reset) await User.updateOne({ _id: existing._id }, { passwordHash, name, passwordChangedAt: new Date() });
     console.log(`admin user: ${email} ${reset ? '(password reset)' : '(already exists)'}`);
   } else {
     await User.create({ name, email, passwordHash, role: 'admin' });
