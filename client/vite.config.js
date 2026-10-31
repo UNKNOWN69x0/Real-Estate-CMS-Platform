@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  // Dev only: where the /api proxy sends requests (the local backend by default)
   const apiTarget = env.VITE_API_URL || 'http://localhost:5000';
 
   return {

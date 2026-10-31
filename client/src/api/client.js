@@ -1,5 +1,8 @@
-// In dev the Vite proxy forwards /api to the backend; in production builds the API origin comes from VITE_API_URL.
-export const API_BASE = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+// The browser always calls /api on its own origin: in dev the Vite proxy forwards it to the backend, in
+// production the Vercel rewrite (client/vercel.json) forwards it to Render. That keeps the auth cookie
+// first-party. VITE_API_URL is only for a deployment WITHOUT that rewrite (cross-origin; the server then
+// needs COOKIE_SAMESITE=none), so leave it unset on Vercel.
+export const API_BASE = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 export class ApiError extends Error {
   constructor(message, status = 0, errors) {

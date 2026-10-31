@@ -12,11 +12,13 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
 
-// Cross-domain deployment (Vercel client + Render API) needs SameSite=None; Secure
+// httpOnly always; Secure in production (HTTPS only). SameSite defaults to Lax because the browser talks to
+// the API through the client's own domain (Vercel rewrite), so the cookie is first-party. Set
+// COOKIE_SAMESITE=none only when the browser calls the API domain directly (cross-site).
 const cookieOptions = {
   httpOnly: true,
   secure: env.isProd,
-  sameSite: env.isProd ? 'none' : 'lax',
+  sameSite: env.cookieSameSite,
   path: '/',
 };
 

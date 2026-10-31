@@ -1,0 +1,44 @@
+# Render Blueprint for the API. Deploy with: Render dashboard -> New -> Blueprint -> pick this repo.
+# Values marked `sync: false` are secrets: Render asks for them in the dashboard on first deploy.
+services:
+  - type: web
+    name: one-chembur-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # PORT is injected by Render; the server reads it automatically.
+
+      # --- Database ---
+      - key: MONGODB_URI
+        sync: false # MongoDB Atlas connection string
+
+      # --- Auth ---
+      - key: JWT_SECRET
+        generateValue: true # Render generates a long random value
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: COOKIE_SAMESITE
+        value: lax # client reaches the API through the Vercel rewrite, so the cookie is first-party
+
+      # --- CORS / proxy ---
+      - key: CLIENT_URL
+        sync: false # your Vercel origin(s), https only, comma-separated, e.g. https://one-chembur.vercel.app
+      - key: TRUST_PROXY
+        value: "2" # browser -> Vercel -> Render's load balancer -> app
+
+      # --- Cloudinary (uploads) ---
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

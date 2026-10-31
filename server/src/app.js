@@ -14,8 +14,9 @@ import { publicInquiryRouter } from './routes/inquiries.js';
 export function createApp() {
   const app = express();
 
-  // Render/Vercel sit behind a proxy; needed for correct client IPs in rate limiting
-  if (env.isProd) app.set('trust proxy', 1);
+  // Trust the proxies in front of us (Vercel rewrite + Render load balancer) so req.ip is the real
+  // visitor and rate limiting works per visitor. See TRUST_PROXY in config/env.js.
+  if (env.trustProxy > 0) app.set('trust proxy', env.trustProxy);
 
   app.use(helmet());
   app.use(
@@ -28,6 +29,12 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   app.use('/api', apiLimiter, originGuard);
+
+  // Authenticated and session responses must never be cached by a browser or by Vercel's edge
+  app.use(['/api/auth', '/api/admin'], (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
   app.use('/api/auth', authRouter);
