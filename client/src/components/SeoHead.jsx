@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSectionsStatus } from '../context/SectionsContext.jsx';
 
@@ -14,6 +15,11 @@ const DEFAULTS = {
  */
 export default function SeoHead() {
   const { byKey } = useSectionsStatus();
+
+  // Drop index.html's static fallback tags so they don't sit next to the CMS-driven ones below
+  useEffect(() => {
+    document.querySelectorAll('[data-static-seo]').forEach((node) => node.remove());
+  }, []);
 
   const ordered = Object.values(byKey).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const pick = (field) =>

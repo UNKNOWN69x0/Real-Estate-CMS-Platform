@@ -72,6 +72,8 @@ export const inquiryCreateSchema = z.object({
   email: z.union([z.literal(''), z.email('Enter a valid email').max(200)]).default(''),
   message: text(1000).default(''),
   source: text(60).default('website'),
+  // Honeypot: hidden from people, filled in by form-spamming bots (see routes/inquiries.js)
+  website: z.string().max(200).default(''),
 });
 
 export const inquiryUpdateSchema = z.object({

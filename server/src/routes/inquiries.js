@@ -15,7 +15,9 @@ publicInquiryRouter.post(
   inquiryLimiter,
   validate(inquiryCreateSchema),
   asyncHandler(async (req, res) => {
-    await Inquiry.create(req.body);
+    const { website, ...inquiry } = req.body;
+    // A filled honeypot means a bot: answer exactly like a success so it learns nothing, but store nothing
+    if (!website) await Inquiry.create(inquiry);
     // Don't echo the stored document back to anonymous callers
     res.status(201).json({ message: 'Thank you! Our team will contact you shortly.' });
   }),

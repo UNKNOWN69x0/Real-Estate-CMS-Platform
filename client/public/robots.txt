@@ -1,0 +1,4 @@
+# One Chembur: crawl the public site, keep the admin panel out of search results.
+User-agent: *
+Allow: /
+Disallow: /admin

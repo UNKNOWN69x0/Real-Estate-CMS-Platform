@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { optimizeImage } from '../../utils/image.js';
 
 // Full-screen image viewer. `index` is null when closed.
 export default function Lightbox({ items, index, onClose, onChange }) {
@@ -48,7 +49,7 @@ export default function Lightbox({ items, index, onClose, onChange }) {
         <X size={28} />
       </button>
 
-      <img src={item.image} alt={item.title} className="max-h-[78svh] max-w-full object-contain" />
+      <img src={optimizeImage(item.image, { width: 1600 })} alt={item.title} className="max-h-[78svh] max-w-full object-contain" />
       <p className="mt-4 text-center text-white">
         {item.title} <span className="ml-2 text-sm text-white/60">{index + 1} / {items.length}</span>
       </p>

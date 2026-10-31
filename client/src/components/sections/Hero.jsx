@@ -3,6 +3,7 @@ import { useInquiry } from '../../context/InquiryContext.jsx';
 import Button from '../ui/Button.jsx';
 import Skeleton from '../ui/Skeleton.jsx';
 import { safeHref } from '../../utils/safeUrl.js';
+import { optimizeImage } from '../../utils/image.js';
 
 const HEIGHT = 'min-h-[30rem] sm:min-h-[34rem] lg:min-h-[38rem]';
 
@@ -38,7 +39,7 @@ export default function Hero() {
     <section id="home" className={`relative flex scroll-mt-14 items-center overflow-hidden bg-brown-700 ${HEIGHT}`}>
       {section.image && (
         <img
-          src={section.image}
+          src={optimizeImage(section.image, { width: 1600 })}
           alt=""
           fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover"

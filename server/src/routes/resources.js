@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { createCrud } from '../utils/crudFactory.js';
+import { toPatchSchema } from '../utils/patchSchema.js';
 import { Section } from '../models/Section.js';
 import { Amenity } from '../models/Amenity.js';
 import { GalleryItem } from '../models/GalleryItem.js';
@@ -19,6 +20,8 @@ export const resources = {
     Model: Section,
     entity: 'section',
     createSchema: sectionSchema,
+    // A section's key is its identity (the public site looks sections up by it), so it can't be renamed after creation
+    updateSchema: toPatchSchema(sectionSchema).omit({ key: true }),
     searchFields: ['key', 'title', 'subtitle'],
     sortFields: ['order', 'key', 'title', 'createdAt', 'updatedAt'],
     labelField: 'key',

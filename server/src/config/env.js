@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 const isProd = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
 
 // How many reverse proxies sit in front of the app. In production the request path is
 // browser -> Vercel (rewrite) -> Render's load balancer -> this app, i.e. 2 hops; getting this
@@ -14,6 +15,8 @@ const sameSite = (process.env.COOKIE_SAMESITE || 'lax').toLowerCase();
 
 export const env = {
   isProd,
+  isTest,
+  logRequests: process.env.LOG_REQUESTS !== 'false' && !isTest,
   port: Number(process.env.PORT) || 5000,
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,

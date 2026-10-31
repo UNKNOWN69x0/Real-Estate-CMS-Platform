@@ -5,6 +5,7 @@ import Button from '../ui/Button.jsx';
 import Card from '../ui/Card.jsx';
 import Skeleton from '../ui/Skeleton.jsx';
 import { safeHref } from '../../utils/safeUrl.js';
+import { optimizeImage } from '../../utils/image.js';
 
 function StatCard({ value, label }) {
   return (
@@ -91,13 +92,13 @@ export default function About() {
         {/* Framed photo (desktop) with the stat cards overlapping its left edge */}
         <div className="absolute inset-y-0 right-0 hidden w-[62%] border border-brown-400 p-3 md:block">
           {section.image ? (
-            <img src={section.image} alt="Project building" loading="lazy" className="h-full w-full object-cover" />
+            <img src={optimizeImage(section.image, { width: 900 })} alt="Project building" loading="lazy" decoding="async" className="h-full w-full object-cover" />
           ) : (
             <div className="grid h-full place-items-center text-brown-600">Building Photo</div>
           )}
         </div>
         {section.image && (
-          <img src={section.image} alt="Project building" loading="lazy" className="mb-4 aspect-[4/3] w-full object-cover md:hidden" />
+          <img src={optimizeImage(section.image, { width: 900 })} alt="Project building" loading="lazy" decoding="async" className="mb-4 aspect-[4/3] w-full object-cover md:hidden" />
         )}
 
         <div className="relative z-10 grid gap-3 sm:grid-cols-3 md:w-[52%] md:grid-cols-1 md:py-4">

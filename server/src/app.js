@@ -25,7 +25,11 @@ export function createApp() {
       credentials: true,
     }),
   );
-  if (!env.isProd) app.use(morgan('dev'));
+  // Readable logs in dev; one terse line per request in production (health checks skipped to keep Render's log clean).
+  // Neither format includes headers, cookies or bodies, so no credentials can reach the logs.
+  if (env.logRequests) {
+    app.use(env.isProd ? morgan('tiny', { skip: (req) => req.path === '/api/health' }) : morgan('dev'));
+  }
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   app.use('/api', apiLimiter, originGuard);
@@ -33,6 +37,15 @@ export function createApp() {
   // Authenticated and session responses must never be cached by a browser or by Vercel's edge
   app.use(['/api/auth', '/api/admin'], (req, res, next) => {
     res.set('Cache-Control', 'no-store');
+    next();
+  });
+
+  // Published content is public and identical for everyone, so let a shared cache (Vercel's edge) hold it for 30 s.
+  // Browsers ignore s-maxage and, with max-age=0, always revalidate via ETag, so an admin who just saved sees the
+  // change on the next load. Deliberately NO stale-while-revalidate: browsers honour it too and would show the old
+  // copy first. GET only: the enquiry POST is untouched.
+  app.use('/api/public', (req, res, next) => {
+    if (req.method === 'GET') res.set('Cache-Control', 'public, max-age=0, s-maxage=30');
     next();
   });
 
