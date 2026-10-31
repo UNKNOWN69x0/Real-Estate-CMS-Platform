@@ -60,7 +60,7 @@ Collection `sections`. One document per CMS block of the public page, identified
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
 | `_id` | ObjectId | auto | | |
-| `key` | String | yes | | **unique**. `navbar`, `hero`, `about`, `connectivity`, `gallery`, `amenities`, `video`, `floorPlans`, `rera`, `developer`, `cta`, `footer`. Pattern `^[a-z][a-zA-Z0-9-]{1,39}$` |
+| `key` | String | yes | | **unique and immutable** (it can't be changed after creation). Built-in keys: `navbar`, `hero`, `about`, `connectivity`, `gallery`, `amenities`, `video`, `floorPlans`, `rera`, `developer`, `cta`, `footer`; any other key is a custom section. Pattern `^[a-z][a-zA-Z0-9-]{1,39}$` |
 | `title` | String | | `""` | max 200 |
 | `subtitle` | String | | `""` | max 300 |
 | `body` | String | | `""` | max 10 000 |
@@ -162,7 +162,7 @@ Collection `activitylogs`. Append-only audit trail written by middleware after e
 
 | `key` | `content` fields | Also uses |
 |---|---|---|
-| `navbar` | `ctaLabel`, `links[] {label, href}` | `title` (brand) |
+| `navbar` | `ctaLabel`, `links[] {label, href}`, `enquiryTitle`, `enquiryIntro`, `enquirySubmitLabel`, `enquirySuccessTitle` (the enquiry pop-up's copy; each falls back to a built-in default when empty) | `title` (brand) |
 | `hero` | `location`, `codename`, `projectName`, `projectSuffix`, `primaryCta {label, href}`, `secondaryCta {label, action}` | `subtitle` (tagline), `image`, `seo` |
 | `about` | `highlights[]` (strings), `stats[] {value, label}`, `brochureCta {label, url}` | `subtitle` (eyebrow), `title`, `body`, `image` |
 | `connectivity` | `eyebrow`, `columns[] {heading, items[] {name, minutes}}` | `title`, `subtitle`, `image` (map) |
@@ -173,7 +173,8 @@ Collection `activitylogs`. Append-only audit trail written by middleware after e
 | `rera` | `registrationLabel`, `registrationNumber`, `websiteUrl`, `qrCaption` | `title`, `body` (disclaimer), `image` (QR) |
 | `developer` | `eyebrow`, `consultants[] {role, name}` | `title`, `subtitle`, `body`, `image` |
 | `cta` | `primaryCta {label, url}`, `secondaryCta {label, url}` | `title`, `subtitle` (eyebrow), `image` |
-| `footer` | `corporateOffice {heading, address, phones[], email}`, `salesOffice {...}`, `quickLinks[] {label, href}`, `copyright`, `legalLinks[] {label, href}` | `title`, `subtitle`, `image` (logo) |
+| `footer` | `corporateOffice {heading, address, phones[], email}`, `salesOffice {...}`, `quickLinksHeading`, `quickLinks[] {label, href}`, `copyright`, `legalLinks[] {label, href}` | `title`, `subtitle`, `image` (logo) |
+| *any other key* (**custom section**) | `imagePosition` (`right` \| `left`), `background` (`white` \| `sand`), `cta {label, href}` (an empty `href` opens the enquiry form) | `subtitle` (eyebrow), `title`, `body` (a blank line starts a new paragraph), `image` |
 
 Example (`connectivity`):
 

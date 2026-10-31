@@ -26,9 +26,11 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 7. [Seeding and demo data](#seeding-and-demo-data)
 8. [Deployment (Render + Vercel)](#deployment-render--vercel)
 9. [API summary](#api-summary)
-10. [Security notes](#security-notes)
-11. [Hosted URLs and credentials](#hosted-urls-and-credentials)
-12. [Known limitations](#known-limitations)
+10. [Testing and code quality](#testing-and-code-quality)
+11. [Performance notes](#performance-notes)
+12. [Security notes](#security-notes)
+13. [Hosted URLs and credentials](#hosted-urls-and-credentials)
+14. [Known limitations](#known-limitations)
 
 ---
 
@@ -40,7 +42,7 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 |---|---|---|
 | Responsive website | Done | Mobile-first Tailwind layout, verified at 375px and 1280px; no horizontal overflow. |
 | Dynamic CMS | Done | All public copy comes from `GET /api/public/*`; built-in fallback copy only if the API is down. |
-| CRUD for all sections | Done | Sections, amenities, gallery and floor plans share one generic CRUD router (`crudFactory.js`) and one admin page component. Inquiries support list/update/delete. *Sections are edited in place; the admin cannot add or remove section blocks because the public page renders a fixed set (the API itself supports create/delete).* |
+| CRUD for all sections | Done | Sections, amenities, gallery and floor plans share one generic CRUD router (`crudFactory.js`) and one admin page component. Inquiries support list/update/delete. **Sections have full create / read / update / delete:** the built-in blocks (hero, about, footer…) can be edited and unpublished (not deleted, since they are part of the page layout), and admins can add their own **custom sections** (heading, text, image, button) that appear on the public page and delete them again. |
 | Inquiry management | Done | Public enquiry modal, then an admin inbox with status workflow (new / contacted / closed), notes, search, filter, **delete** and **CSV export**. |
 | SEO metadata | Done | `metaTitle`, `metaDescription`, `ogImage` per section; `react-helmet-async` writes title, description, canonical, Open Graph and Twitter tags. |
 | Draft / publish | Done | `status` on every content type; public API returns published only; one-click publish toggle in the admin. |
@@ -136,6 +138,8 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 ├── client/                         React + Vite app (public site and /admin)
 │   ├── vercel.json                 SPA fallback + /api rewrite to Render + cache/security headers
 │   ├── vite.config.js              dev server and /api proxy
+│   ├── public/                     favicon and robots.txt
+│   ├── test/                       unit and contract tests (node:test)
 │   └── src/
 │       ├── api/                    fetch client, public and admin API calls
 │       ├── admin/                  AdminApp routes, section and resource configs
@@ -149,6 +153,7 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 │       └── pages/                  public/ and admin/ route components
 ├── server/
 │   ├── scripts/dev-memory.js       run the API against a throwaway in-memory database
+│   ├── test/ · test-utils/         API, auth, production-proxy and Postman-collection tests (node:test)
 │   └── src/
 │       ├── app.js · server.js      Express app and entry point
 │       ├── config/                 env parsing, Mongo, Cloudinary
@@ -161,6 +166,8 @@ Built for the *Advanced Full-Stack Developer Assignment: Enterprise Real Estate 
 ├── docs/
 │   ├── DATABASE_SCHEMA.md
 │   └── postman_collection.json
+├── .github/workflows/ci.yml        CI: lint, tests, build and audit on every push and PR
+├── package.json                    root convenience scripts (install:all, dev:*, lint, test, build)
 ├── render.yaml                     Render Blueprint for the API
 └── reference/                      assignment PDF and design screenshots
 ```
@@ -217,6 +224,7 @@ Full template with comments: [`server/.env.example`](server/.env.example). `rend
 | `CLIENT_URL` | **yes in prod** | `http://localhost:5173` | Allowed browser origin(s) for CORS and the origin guard. Comma-separated, **https only** in production, no trailing slash |
 | `COOKIE_SAMESITE` | no | `lax` | `lax` behind the Vercel rewrite. `none` only if browsers call the API's own domain directly |
 | `TRUST_PROXY` | no | `2` in prod, `0` locally | Number of reverse proxies in front of the API (Vercel + Render = 2). Needed for correct per-visitor rate limiting |
+| `LOG_REQUESTS` | no | on (off in tests) | `false` silences the per-request log line (used by the test suite) |
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | for uploads | | Cloudinary credentials. Without them uploads return 503 |
 | `SEED_ADMIN_NAME` / `_EMAIL` / `_PASSWORD` | for seeding | `Admin` / `admin@onechembur.com` / none | Admin account created by `npm run seed` (run from your machine) |
 | `ADMIN_NEW_PASSWORD` | only for `npm run reset-admin` | none | The new admin password for an emergency reset. Set it for the one command, then unset it; never commit it or put it on Render |
@@ -379,6 +387,39 @@ Errors are JSON: `{ "success": false, "message": "…", "errors": { "field": "me
 
 ---
 
+## Testing and code quality
+
+```bash
+npm run install:all   # from the repo root: installs server and client
+npm run lint          # ESLint on both packages
+npm test              # server (API) and client (unit/contract) tests
+```
+
+(or `npm test` / `npm run lint` inside `server/` or `client/`). No framework to install: tests use Node's built-in runner. GitHub Actions ([`ci.yml`](.github/workflows/ci.yml)) runs lint, tests, build and `npm audit` on every push and pull request.
+
+| Suite | What it proves |
+|---|---|
+| `server/test/content-crud.test.js` | Public API serves published content only; admin routes need a session; generic CRUD, per-field validation errors, search / filter / sort / pagination (including injection-style queries), draft/publish and `publishedAt`, activity-log entries, dashboard stats, cache headers |
+| `server/test/sections-uploads-inquiries.test.js` | Section keys (unique, immutable), custom-section lifecycle, link-safety rules inside `content`, SEO limits, upload validation (MIME and real file signature), public enquiry form (validation, honeypot), inquiry management and CSV export |
+| `server/test/auth.test.js` | Login and cookie flags, identical failure for unknown email vs wrong password, rate limits, every change-password rule, session invalidation after a change, the `reset-admin` script run as a real process, and that no password ever reaches the server logs |
+| `server/test/production.test.js` | The app as deployed (`NODE_ENV=production`) behind two proxies: Secure cookies, startup config checks, CORS and origin guard, and per-visitor rate limits |
+| `server/test/postman-collection.test.js` | Runs the whole [Postman collection](docs/postman_collection.json) against the live app and checks every route is covered, so the API docs can't drift from the code |
+| `client/test/*.test.js` | The safe-URL guard, video URL parsing, Cloudinary image optimisation, the config-driven form engine, and a contract test that keeps the admin editor, the public site and the seed data in agreement about which sections exist |
+
+The API tests boot the real Express app against a throwaway in-memory MongoDB (downloaded on first run), so they never touch your database or Cloudinary. Code quality is also enforced structurally: one generic CRUD router and one form engine instead of per-collection copies, reusable components, and no dead code or unused exports.
+
+---
+
+## Performance notes
+
+- **Admin is code-split:** public visitors never download the admin bundle.
+- **Images:** lazy-loaded with skeleton fallbacks and explicit sizes. Cloudinary images are served through `f_auto,q_auto` with a width cap (plus a 2x variant for high-density screens), so browsers get WebP/AVIF at the size they need instead of the multi-megabyte original.
+- **Edge caching of public content:** `GET /api/public/*` sends `Cache-Control: public, max-age=0, s-maxage=30`, so Vercel's edge can serve published content for 30 seconds without waking the Render free tier on every visit, while browsers still revalidate on every load. The trade-off: an edit in the admin can take up to about 30 seconds to appear on the public site (change or remove the header in `server/src/app.js` to tune it). It deliberately omits `stale-while-revalidate`, which browsers also honour and which would show an admin the pre-edit copy first. Authenticated routes are always `no-store`.
+- **Static assets:** hashed bundles are cached as immutable by `vercel.json`; fonts use `display=swap`.
+- **Database:** every list the public site and dashboard run is backed by an index (see the [schema doc](docs/DATABASE_SCHEMA.md#indexes)).
+
+---
+
 ## Security notes
 
 - **Authentication:** bcrypt-hashed passwords; HS256 JWT in an `httpOnly`, `Secure` (production), `SameSite=Lax` cookie, so scripts can't read it; the user is re-loaded from the database on every request. Login compares against a dummy hash for unknown emails to avoid revealing which accounts exist.
@@ -387,7 +428,10 @@ Errors are JSON: `{ "success": false, "message": "…", "errors": { "field": "me
 - **CSRF:** state-changing requests whose `Origin` isn't in `CLIENT_URL` are rejected (403); cookies are `SameSite=Lax`; CORS is an allowlist with credentials.
 - **Input validation:** Zod on every write with unknown fields stripped; list queries only honour whitelisted filter and sort fields and regex-escape search text (no operator injection).
 - **Safe links:** link and image fields in section content must be `http(s)`, a `#anchor` or a `/path` (never `javascript:` or `data:`), enforced by the API and again on the client where links are rendered.
-- **Uploads:** memory storage, 10 MB limit, MIME allow-list (images and PDF), sent straight to Cloudinary; nothing is written to the server's disk.
+- **Uploads:** memory storage, 10 MB limit, MIME allow-list (images and PDF) **plus a check of the file's real signature**, so a script renamed to `.png` is refused; sent straight to Cloudinary, nothing is written to the server's disk. Malformed upload requests are a 400, not a 500.
+- **Spam:** the public enquiry form has a hidden honeypot field; bots that fill it get a normal-looking success and nothing is stored. On top of that, 10 enquiries per hour per visitor.
+- **Content integrity:** a section's `key` is its identity and can't be renamed after creation (the public site looks sections up by it); built-in sections can't be deleted from the admin.
+- **Operations:** graceful shutdown on `SIGTERM` (Render sends it on every deploy), unhandled rejections and exceptions are logged, and production request logs contain no headers, cookies or bodies.
 - **CSV export:** cells that could execute as spreadsheet formulas are neutralised.
 - **Headers and errors:** `helmet` defaults on the API; security headers on the static site (`nosniff`, frame denial, referrer and permissions policies); no stack traces in production; `no-store` on authenticated responses.
 - **Secrets:** all secrets come from environment variables; `.env` files are git-ignored and only `.env.example` templates are committed. The server refuses to start in production with a weak `JWT_SECRET` or a non-HTTPS `CLIENT_URL`.
@@ -413,8 +457,8 @@ Errors are JSON: `{ "success": false, "message": "…", "errors": { "field": "me
 
 ## Known limitations
 
-- **SEO tags are rendered in the browser** (`react-helmet-async`). Search engines that execute JavaScript (Google) see them; crawlers and link-preview bots that don't (some social scrapers) will not. Server-side rendering or prerendering would close that gap.
-- **No automated test suite yet.** The API and admin flows were verified manually and with throwaway scripts (including a production-mode proxy test and a run of the whole Postman collection); adding Vitest/Supertest suites is the natural next step.
-- **Sections can't be added or removed in the admin**, by design: the public page renders a fixed set of blocks.
+- **SEO tags are rendered in the browser** (`react-helmet-async`). Search engines that execute JavaScript (Google) see them; `index.html` ships static fallback title/description/Open Graph tags, but link-preview bots that don't run JavaScript only ever see those defaults, not the per-page CMS values. Server-side rendering or prerendering would close that gap. There is no `sitemap.xml` (it needs the final domain); `robots.txt` keeps `/admin` out of search.
+- **No browser-level (end-to-end) tests.** The API, form logic and docs are covered by automated tests, and the admin UI was exercised by hand in a browser, but there is no Playwright/Cypress suite.
+- **Built-in sections can be edited and unpublished but not deleted or re-ordered on the page**; their position in the layout is fixed. Custom sections are added between the Developer block and the closing banner.
 - **Single admin role.** There is one `admin` role; there is no per-user permission model.
 - **Free-tier hosting** (Render) sleeps when idle, so the first request after a pause is slow.
