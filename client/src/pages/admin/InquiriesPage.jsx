@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Download, Eye } from 'lucide-react';
+import { Download, Eye, Trash2 } from 'lucide-react';
 import { adminApi } from '../../api/admin.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { formatDateTime } from '../../utils/format.js';
@@ -9,6 +9,7 @@ import DataTable from '../../components/admin/DataTable.jsx';
 import Pagination from '../../components/admin/Pagination.jsx';
 import Toolbar from '../../components/admin/Toolbar.jsx';
 import SectionForm from '../../components/admin/SectionForm.jsx';
+import ConfirmDialog from '../../components/admin/ConfirmDialog.jsx';
 import StatusBadge from '../../components/admin/StatusBadge.jsx';
 import Button from '../../components/ui/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
@@ -31,6 +32,8 @@ export default function InquiriesPage() {
   const [selected, setSelected] = useState(null);
   const [pendingId, setPendingId] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setParams((p) => (p.search === searchInput ? p : { ...p, search: searchInput, page: 1 })), 300);
@@ -60,6 +63,20 @@ export default function InquiriesPage() {
       toast.error(err.message);
     } finally {
       setPendingId(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    setDeletePending(true);
+    try {
+      await adminApi.remove('inquiries', deleting._id);
+      toast.success(`Deleted inquiry from ${deleting.name}`);
+      setDeleting(null);
+      setReloadKey((n) => n + 1);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setDeletePending(false);
     }
   };
 
@@ -148,10 +165,26 @@ export default function InquiriesPage() {
         onSort={(sort) => setParams((p) => ({ ...p, sort, page: 1 }))}
         emptyMessage={params.search || params.status ? 'No inquiries match your filters.' : 'No inquiries yet.'}
         actions={(row) => (
-          <Button variant="ghost" size="sm" onClick={() => setSelected(row)}>
-            <Eye size={14} /> Details
-          </Button>
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(row)}>
+              <Eye size={14} /> Details
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setDeleting(row)} aria-label={`Delete inquiry from ${row.name}`} title="Delete">
+              <Trash2 size={14} />
+            </Button>
+          </>
         )}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        title="Delete inquiry?"
+        message={`The inquiry from “${deleting?.name ?? ''}” will be permanently removed. This can't be undone.`}
+        confirmLabel="Delete"
+        danger
+        loading={deletePending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleting(null)}
       />
 
       <div className="mt-4">
