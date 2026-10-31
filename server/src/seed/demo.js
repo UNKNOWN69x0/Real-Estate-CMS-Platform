@@ -74,7 +74,6 @@ const MESSAGES = [
   'Calling from Dubai, can you arrange a virtual walkthrough?',
   '',
 ];
-const SOURCES = ['hero', 'cta', 'floor-plans'];
 const NOTES = [
   'Called, wants a site visit on Saturday 11am',
   'Sent brochure on WhatsApp, follow up in 2 days',

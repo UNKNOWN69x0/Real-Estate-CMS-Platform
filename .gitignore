@@ -6,6 +6,9 @@ node_modules/
 .env.*
 !.env.example
 
+# In-memory MongoDB binaries used by the tests (CI cache)
+.mongodb-binaries/
+
 # Build output
 dist/
 build/

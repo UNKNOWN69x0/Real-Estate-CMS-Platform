@@ -1,21 +1,22 @@
 {
   "name": "one-chembur-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "One Chembur API: Express 5 + MongoDB (Mongoose) backend for the CMS-driven real estate site",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "seed": "node src/seed/seed.js",
     "dev:memory": "node scripts/dev-memory.js",
     "seed:demo": "node src/seed/demo.js",
     "seed:demo:clear": "node src/seed/demo.js --clear",
-    "reset-admin": "node src/seed/resetAdmin.js"
+    "reset-admin": "node src/seed/resetAdmin.js",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "type": "module",
   "private": true,
   "dependencies": {
@@ -34,9 +35,15 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
     "mongodb-memory-server": "^11.3.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
   }
 }

@@ -45,7 +45,6 @@ export default function Video() {
           />
         )}
         {playing && media?.type === 'file' && (
-          // eslint-disable-next-line jsx-a11y/media-has-caption
           <video src={media.src} controls autoPlay className="absolute inset-0 h-full w-full" />
         )}
 

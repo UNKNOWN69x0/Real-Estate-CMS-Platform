@@ -1,0 +1,18 @@
+{
+  "name": "one-chembur",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One Chembur: a CMS-driven real estate site (React + Vite client, Express + MongoDB API). Convenience scripts for the two packages in /client and /server.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "lint": "npm --prefix server run lint && npm --prefix client run lint",
+    "test": "npm --prefix server test && npm --prefix client test",
+    "build": "npm --prefix client run build"
+  }
+}
